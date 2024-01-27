@@ -1,6 +1,8 @@
 const {Users, Files} = require('../models');
 const { Op } = require ('sequelize');
 const BuildResponse = require('../helpers/BuildResponse')
+const bcrypt = require('bcrypt')
+
 
 class UserController {
   async getAll(req, res)  {
@@ -34,7 +36,7 @@ class UserController {
         
       res.status(200).json(buildResponse)
     } catch (error){
-      res.status(500).json(error.messages || 'internal server error')
+      res.status(500).json(error.message || 'internal server error')
     }
   }
 
@@ -56,12 +58,15 @@ class UserController {
     try{
       const formBody = req.body;
       const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
+      const password = req.body.newPassword;    
+      const saltRounds = 10 ;
+      const encryptedPassword = await bcrypt.hash(password, saltRounds)
 
       if (confirmPassword === newPassword){
         await Users.create({
           fullName: fullName,
           email: email,
-          password: confirmPassword,
+          password: encryptedPassword,
           role: role,
           status: status
         })
