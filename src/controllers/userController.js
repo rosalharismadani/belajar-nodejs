@@ -107,7 +107,6 @@ class UserController {
           })
         }
         
-
         const users = await Users.findAll({
           where: {id: id}
         })
