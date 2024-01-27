@@ -1,17 +1,24 @@
 const {Users, Files} = require('../models')
+const { Op } = require ('sequelize');
 
 class UserController {
   async getAll(req, res)  {
     try {
       const {page, pageSize, fullName} = req.query;
 
+      const offset= Number((page - 1) * pageSize) || 0;
+      const limit = Number(pageSize) || 10;
+
+
       let whereParams ={}
       if(fullName) {
-        whereParams = fullname;
+        whereParams = {
+          fullName: {[Op.like]: `%${fullName}%`}
+        }
       }
       const users = await Users.findAll({
-        limit: Number(pageSize),
-        offset: Number((page - 1) * pageSize),
+        limit,
+        offset,
         where: whereParams,
         include: {
           model: Files
