@@ -1,5 +1,6 @@
-const {Users, Files} = require('../models')
+const {Users, Files} = require('../models');
 const { Op } = require ('sequelize');
+const BuildResponse = require('../helpers/BuildResponse')
 
 class UserController {
   async getAll(req, res)  {
@@ -28,13 +29,10 @@ class UserController {
       const total = await Users.count({
         where: whereParams
       })
+
+      const buildResponse = BuildResponse.get({ count: total, data: users})
         
-      res.status(200).json({
-        code: 200,
-        messages: `${users.length} data sudah diterima`,
-        count: total,
-        data: users
-      })
+      res.status(200).json(buildResponse)
     } catch (error){
       res.status(500).json(error.messages || 'internal server error')
     }
@@ -45,15 +43,102 @@ class UserController {
       let id = req.params.id
       const users = await Users.findByPk(id)
 
-      res.status(200).json({
-        code: 200,
-        message: 'Data sudah diterima',
-        data: users
-      })
+      const buildResponse = BuildResponse.get({data: users})
+
+      res.status(200).json(buildResponse)
     } catch(error) {
       res.status(500).json(error.message || 'internal server error')
     }
     
+  }
+
+  async createUser(req, res) {
+    try{
+      const formBody = req.body;
+      const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
+
+      if (confirmPassword === newPassword){
+        await Users.create({
+          fullName: fullName,
+          email: email,
+          password: confirmPassword,
+          role: role,
+          status: status
+        })
+      }
+      
+      const users = await Users.findAll({
+        where: {fullName: `${fullName}`}
+      })
+
+      const buildResponse = BuildResponse.createData({data: users})
+      res.status(200).json(buildResponse)
+
+    } catch(error){
+      res.status(500).json(error.message || 'internal server error')
+    }
+  }
+
+  async updateUser(req, res) {
+    const id = req.params.id;
+    const formBody = req.body;
+    const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
+
+    try{
+      if (confirmPassword === newPassword){
+        if(newPassword !== ''){
+          await Users.update({
+            fullName: fullName,
+            email: email,
+            password: confirmPassword,
+            role: role,
+            status: status
+          }, {
+            where: {id: id}
+          })
+        } else {
+          await Users.update({
+            fullName: fullName,
+            email: email,
+            role: role,
+            status: status
+          }, {
+            where: {id: id}
+          })
+        }
+        
+
+        const users = await Users.findAll({
+          where: {id: id}
+        })
+
+        const buildResponse = BuildResponse.updateData({data: users})
+        res.status(200).json(buildResponse)
+      } else {
+        res.status(500).json({
+          message: 'Password baru dengan konfirmasi password berbeda'
+        })
+      }
+
+
+    } catch(error) {
+      res.status(500).json(error.message || 'internal server error')
+    }
+  }
+
+  async deleteUser(req, res) {
+    const idparam = req.params.id;
+
+    try{
+      await Users.destroy({
+        where: {id: idparam}
+      })
+
+      const buildResponse = BuildResponse.deleteData();
+      res.status(200).json(buildResponse)
+    } catch(error) {
+      res.status(500).json(error.message || 'internal server error')
+    }
   }
   
 }

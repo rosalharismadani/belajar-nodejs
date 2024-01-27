@@ -1,4 +1,5 @@
-const {Categories, sequelize} = require('../models');
+const {Categories} = require('../models');
+const BuildResponse = require('../helpers/BuildResponse');
 
 class CategoriesController {
   async getAll(req, res) {
@@ -21,12 +22,8 @@ class CategoriesController {
         where: whereParams
       })
 
-      res.status(200).json({
-        code: 200,
-        message: `${categories.length} data sudah diterima`,
-        count: total,
-        data: categories
-      })
+      const buildResponse = BuildResponse.get({count: total, data: categories})
+      res.status(200).json(buildResponse)
     } catch(error){
       res.status(500).json(error.message || 'internal server error')
     }  
@@ -68,8 +65,6 @@ class CategoriesController {
     }catch(error){
       res.status(500).json(error.message || 'internal server error')
     }
-
-    
   }
 
   async updateCategory(req, res) {
