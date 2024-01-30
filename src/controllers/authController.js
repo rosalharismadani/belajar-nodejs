@@ -1,7 +1,8 @@
 const {Users} = require('../models');
 const BuildResponse = require('../helpers/BuildResponse');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+let token, secretKey, options;
 
 class AuthController {
   async login(req, res) {
@@ -29,10 +30,15 @@ class AuthController {
         role: user.role
       }
 
-      const secretKey = 'lmknjbhvg';
-      const options ={ expiresIn: '5min' }
-
-      const token = jwt.sign(payload, secretKey, options);
+      if(user.role == 'Super Admin'){
+        secretKey = 'qawsedrft';
+        options ={ expiresIn: '5min' }
+        token = jwt.sign(payload, secretKey, options);
+      } else if(user.role == 'Creator') {
+        secretKey = 'lmknjbhvg';
+        options ={ expiresIn: '5min' }
+        token = jwt.sign(payload, secretKey, options);
+      }
 
       delete user.password;
       

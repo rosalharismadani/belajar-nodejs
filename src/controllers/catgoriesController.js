@@ -1,21 +1,26 @@
 const {Categories} = require('../models');
 const BuildResponse = require('../helpers/BuildResponse');
+const { Op } = require('sequelize')
 
 class CategoriesController {
   async getAll(req, res) {
     try{
       const {page, pageSize, title} = req.query;
 
+      const offset= Number((page - 1) * pageSize) || 0;
+      const limit = Number(pageSize) || 10;
+
       let whereParams = {}
       if(title) {
-        whereParams = title;
+        whereParams = {
+          title: {[Op.like]: `%${title}%`}
+        };
       }
       
       const categories = await Categories.findAll({
-        limit: Number(pageSize),
-        offset: Number((page - 1) * pageSize),
-      }, {
-        where: {title: title},
+        limit,
+        offset,
+        where: whereParams,
       })
 
       const total = await Categories.count({
@@ -56,8 +61,8 @@ class CategoriesController {
         where: {title: `${title}`}
       })
   
-      res.status(200).json({
-        code: 200,
+      res.status(201).json({
+        code: 201,
         message: 'Data berhasil dibuat',
         data: categories
       })
