@@ -55,6 +55,22 @@ class AuthController {
       res.status(500).json(error.message || 'internal server error')
     }
   }
+
+  async profil(req, res){
+    try{
+      const { email } = req.body;
+
+      const user = await Users.findOne({where: {email}})
+
+      user.password = undefined;
+
+      const buildResponse = BuildResponse.get({data: user})
+
+      res.status(200).json(buildResponse)
+    }catch(error){
+      res.status(500).json(error.message || 'internal server error')
+    }
+  }
 }
 
 module.exports = new AuthController();

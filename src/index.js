@@ -5,7 +5,8 @@ const bodyParser = require('body-parser')
 const userRoutes = require ('./routes/userRoutes')
 const authRoutes = require('./routes/authRoutes')
 const categoriesRoutes =  require('./routes/categoriesRoutes')
-const {sequelize} = require('./models')
+const {sequelize} = require('./models');
+const postRoutes = require('./routes/postRoutes');
 const port = 3000;
 
 
@@ -17,6 +18,7 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use('/v1', userRoutes)
 app.use('/v1', categoriesRoutes)
 app.use('/v1', authRoutes)
+app.use('/v1', postRoutes)
 
 // sync sequelize  models with database
 // sequelize.sync({force: false}).then(()=> {
