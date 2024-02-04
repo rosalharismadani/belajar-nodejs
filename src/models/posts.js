@@ -1,11 +1,15 @@
 'use strict';
 const { Model, DataTypes, UUIDV4 } = require('sequelize');
+
 module.exports = (sequelize) => {
   class Posts extends Model {
     static associate(models) {
       Posts.belongsTo(models.Files, {
         foreignKey: 'thumbnail'
       });
+
+      Posts.belongsToMany(models.Categories, { through: models.PostCategories });
+      
     }
   }
   Posts.init({

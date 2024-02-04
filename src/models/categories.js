@@ -4,6 +4,7 @@ const { Model, DataTypes, UUIDV4 } = require('sequelize');
 module.exports = (sequelize) => {
   class Categories extends Model {
     static associate(models) {
+      Categories.belongsToMany(models.Posts, { through: models.PostCategories });
     }
   }
   Categories.init({

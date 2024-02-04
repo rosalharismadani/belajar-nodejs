@@ -1,6 +1,7 @@
-const {Posts, Files} = require('../models');
+const {Posts, Files, Categories} = require('../models');
 const { Op } = require ('sequelize');
 const BuildResponse = require('../helpers/BuildResponse')
+const slug = require('slug');
 
 
 class PostController {
@@ -25,8 +26,9 @@ class PostController {
         offset,
         where: whereParams,
         include: {
-          model: Files
-        }
+          model: Files,
+          model: Categories,
+        },
       })
 
       const total = await Posts.count({
@@ -44,7 +46,32 @@ class PostController {
   async getById(req, res) {
     try {
       let id = req.params.id
-      const posts = await Posts.findByPk(id)
+      const posts = await Posts.findOne({
+        where: {id: id},
+        include: {
+          model: Categories,
+        },
+      })
+
+      const buildResponse = BuildResponse.get({data: posts})
+
+      res.status(200).json(buildResponse)
+    } catch(error) {
+      res.status(500).json(error.message || 'internal server error')
+    }
+    
+  }
+
+  async getBySlug(req, res) {
+    try {
+      let slugparam = req.params.slug
+      const posts = await Posts.findOne({
+        where: {slug: slugparam},
+        include: {
+          model: Files,
+          model: Categories
+        }
+      })
 
       const buildResponse = BuildResponse.get({data: posts})
 
@@ -59,12 +86,14 @@ class PostController {
     try{
       const formBody = req.body;
       const { title, description, categoryId, status} = formBody;
+      const slugparam = slug(`${title}`)
 
         await Posts.create({
           title: title,
           description: description,
           categoryId: categoryId,
-          status: status
+          status: status,
+          slug: slugparam,
         })
       
       const users = await Posts.findAll({

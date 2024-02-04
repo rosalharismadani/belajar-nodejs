@@ -1,4 +1,20 @@
+const categories = require("../models/categories")
+
 const get = (dataResponse) => {
+  const {
+    code = 200,
+    messages = 'data sudah diterima',
+    ...rest
+  } = dataResponse
+
+  return {
+    code,
+    messages,
+    ...rest
+  }
+}
+
+const getPost = (dataResponse) => {
   const {
     code = 200,
     messages = 'data sudah diterima',
@@ -37,6 +53,7 @@ const deleteData = () => {
 
 module.exports = {
   get,
+  getPost,
   createData,
   updateData,
   deleteData
