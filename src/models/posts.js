@@ -3,6 +3,7 @@ const { Model, DataTypes, UUIDV4 } = require('sequelize');
 
 module.exports = (sequelize) => {
   class Posts extends Model {
+    
     static associate(models) {
       Posts.belongsTo(models.Files, {
         foreignKey: 'thumbnail'

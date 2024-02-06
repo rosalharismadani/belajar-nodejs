@@ -1,7 +1,8 @@
 const {Users, Files} = require('../models');
 const { Op } = require ('sequelize');
 const BuildResponse = require('../helpers/BuildResponse')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const { sendEmail } = require('../helpers/SendEmail');
 
 
 class UserController {
@@ -24,13 +25,15 @@ class UserController {
         offset,
         where: whereParams,
         include: {
-          model: Files
+          model: Files,
         }
       })
 
       const total = await Users.count({
         where: whereParams
       })
+
+      // sendEmail()
 
       const buildResponse = BuildResponse.get({ count: total, data: users})
         
