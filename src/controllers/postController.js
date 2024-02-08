@@ -1,7 +1,8 @@
-const {Posts, Files, Categories} = require('../models');
+const {Posts, Files, Categories, PostCategories} = require('../models');
 const { Op } = require ('sequelize');
 const BuildResponse = require('../helpers/BuildResponse')
 const slug = require('slug');
+const { raw } = require('body-parser');
 
 
 class PostController {
@@ -91,16 +92,20 @@ class PostController {
         await Posts.create({
           title: title,
           description: description,
-          categoryId: categoryId,
           status: status,
           slug: slugparam,
         })
       
-      const users = await Posts.findAll({
-        where: {title: `${title}`}
+      const post = await Posts.findOne({ where: {title: `${title}`} })
+
+      console.log(post.id)
+
+      await PostCategories.create({
+        postId: post.id,
+        categoryId: categoryId,
       })
 
-      const buildResponse = BuildResponse.createData({data: users})
+      const buildResponse = BuildResponse.createData({data: post})
       res.status(200).json(buildResponse)
 
     } catch(error){

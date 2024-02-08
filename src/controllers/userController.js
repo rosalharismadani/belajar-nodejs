@@ -1,4 +1,4 @@
-const {Users, Files} = require('../models');
+const {Users, Files, path} = require('../models');
 const { Op } = require ('sequelize');
 const BuildResponse = require('../helpers/BuildResponse')
 const bcrypt = require('bcrypt');
@@ -26,14 +26,19 @@ class UserController {
         where: whereParams,
         include: {
           model: Files,
+          url: path
         }
       })
+
+      users.password = undefined;
 
       const total = await Users.count({
         where: whereParams
       })
 
       // sendEmail()
+      
+      
 
       const buildResponse = BuildResponse.get({ count: total, data: users})
         
@@ -47,6 +52,8 @@ class UserController {
     try {
       let id = req.params.id
       const users = await Users.findByPk(id)
+
+      users.password = undefined;
 
       const buildResponse = BuildResponse.get({data: users})
 
@@ -65,22 +72,24 @@ class UserController {
       const saltRounds = 10 ;
       const encryptedPassword = await bcrypt.hash(password, saltRounds)
 
-      if (confirmPassword === newPassword){
-        await Users.create({
-          fullName: fullName,
-          email: email,
-          password: encryptedPassword,
-          role: role,
-          status: status
-        })
-      }
+      // if (confirmPassword === newPassword){
+        
+      // }
+
+      await Users.create({
+        fullName: fullName,
+        email: email,
+        password: encryptedPassword,
+        role: role,
+        status: status,
+      })
       
-      const users = await Users.findAll({
+      const users = await Users.findOne({
         where: {fullName: `${fullName}`}
       })
 
       const buildResponse = BuildResponse.createData({data: users})
-      res.status(200).json(buildResponse)
+      res.status(201).json(buildResponse)
 
     } catch(error){
       res.status(500).json(error.message || 'internal server error')
@@ -91,6 +100,9 @@ class UserController {
     const id = req.params.id;
     const formBody = req.body;
     const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
+    const password = req.body.newPassword;    
+    const saltRounds = 10 ;
+    const encryptedPassword = await bcrypt.hash(password, saltRounds)
 
     try{
       if (confirmPassword === newPassword){
@@ -98,7 +110,7 @@ class UserController {
           await Users.update({
             fullName: fullName,
             email: email,
-            password: confirmPassword,
+            password: encryptedPassword,
             role: role,
             status: status
           }, {
