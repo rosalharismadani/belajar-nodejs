@@ -98,8 +98,6 @@ class PostController {
       
       const post = await Posts.findOne({ where: {title: `${title}`} })
 
-      console.log(post.id)
-
       await PostCategories.create({
         postId: post.id,
         categoryId: categoryId,
@@ -122,18 +120,25 @@ class PostController {
           await Posts.update({
             title: title,
             description: description,
-            categoryId: categoryId,
             status: status
           }, {
             where: {id: id}
           })
         
-        
-        const users = await Posts.findAll({
+        const post = await Posts.findOne({
           where: {id: id}
         })
 
-        const buildResponse = BuildResponse.updateData({data: users})
+        console.log(post.id)
+
+        await PostCategories.update({
+          postId: post.id,
+          categoryId: categoryId,
+        },{
+          where: {postId: post.id}
+        })
+
+        const buildResponse = BuildResponse.updateData({data: post})
         res.status(200).json(buildResponse)
 
     } catch(error) {
