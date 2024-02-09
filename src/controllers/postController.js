@@ -14,26 +14,33 @@ class PostController {
       const limit = Number(pageSize) || 10;
 
 
-      let whereParams ={}
-      if(title || category) {
-        whereParams = {
-          title: {[Op.like]: `%${title}%` },
-          category: {[Op.like]: `%${category}%`}
+      let whereParamsTitle ={}
+      if(title) {
+        whereParamsTitle = {
+            title: {[Op.like]: `%${title}%` }
         }
       }
+
+      let whereParamsCategory ={}
+      if(category) {
+        whereParamsCategory = {
+            title: {[Op.like]: `%${category}%` }
+        }
+      }      
       
       const posts = await Posts.findAll({
         limit,
         offset,
-        where: whereParams,
+        where: whereParamsTitle,
         include: {
           model: Files,
           model: Categories,
+          where: whereParamsCategory,
         },
       })
 
       const total = await Posts.count({
-        where: whereParams
+        where: whereParamsTitle
       })
 
       const buildResponse = BuildResponse.get({ count: total, data: posts})
@@ -115,12 +122,14 @@ class PostController {
     const id = req.params.id;
     const formBody = req.body;
     const { title, description, categoryId, status} = formBody;
+    const slugparam = slug(`${title}`)
 
     try{
           await Posts.update({
             title: title,
             description: description,
-            status: status
+            status: status,
+            slug: slugparam
           }, {
             where: {id: id}
           })

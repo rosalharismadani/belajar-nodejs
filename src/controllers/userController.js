@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const { sendEmail } = require('../helpers/SendEmail');
 
 
+
 class UserController {
   async getAll(req, res)  {
     try {
@@ -67,14 +68,14 @@ class UserController {
   async createUser(req, res) {
     try{
       const formBody = req.body;
-      const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
-      const password = req.body.newPassword;    
+      const { fullName, email, confirmNewPassword, newPassword, role, status} = formBody;
+      const password = req.body.confirmNewPassword;    
       const saltRounds = 10 ;
-      const encryptedPassword = await bcrypt.hash(password, saltRounds)
+      const encryptedPassword = await bcrypt.hash(password, saltRounds)   
 
-      // if (confirmPassword === newPassword){
-        
-      // }
+      if (confirmNewPassword !== newPassword){
+        throw new Error("Password dengan Konfirmasi Password berbeda!")
+      } 
 
       await Users.create({
         fullName: fullName,
@@ -99,18 +100,19 @@ class UserController {
   async updateUser(req, res) {
     const id = req.params.id;
     const formBody = req.body;
-    const { fullName, email, confirmPassword, newPassword, role, status} = formBody;
+    const { fullName, email, confirmNewPassword, newPassword, role, avatar, status} = formBody;
     const password = req.body.newPassword;    
     const saltRounds = 10 ;
     const encryptedPassword = await bcrypt.hash(password, saltRounds)
 
-    try{
-      if (confirmPassword === newPassword){
-        if(newPassword !== ''){
+    try{     
+      if(newPassword !== undefined){
+        if (confirmNewPassword === newPassword  && newPassword !== ''){
           await Users.update({
             fullName: fullName,
             email: email,
             password: encryptedPassword,
+            avatar: avatar,
             role: role,
             status: status
           }, {
@@ -120,6 +122,7 @@ class UserController {
           await Users.update({
             fullName: fullName,
             email: email,
+            avatar: avatar,
             role: role,
             status: status
           }, {

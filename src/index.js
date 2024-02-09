@@ -26,9 +26,9 @@ app.use('/v1', uploadRoutes)
 app.use('/public/uploads', express.static('public/uploads'))
 
 // sync sequelize  models with database
-// sequelize.sync({force: false}).then(()=> {
-//   console.info('Database sync succesfully')
-// })
+sequelize.sync({force: false}).then(()=> {
+  console.info('Database sync succesfully')
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
